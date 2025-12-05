@@ -1,0 +1,54 @@
+.row {
+    margin-bottom: 40px;
+    padding-left: 2%;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #fff;
+    border-left: 4px solid #00FFFF;
+    /* Aqua Blue */
+    padding-left: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.list {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding-bottom: 20px;
+    padding-right: 2%;
+    scroll-behavior: smooth;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Ensure cards take up appropriate width for 5 per row */
+.list>* {
+    flex: 0 0 auto;
+    width: 180px;
+    /* Slightly smaller than 20% to ensure 5 fit comfortably */
+    min-width: 180px;
+    /* Reduced min-width */
+}
+
+.list::-webkit-scrollbar {
+    display: none;
+    /* Hide scrollbar like Netflix */
+}
+
+.list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}

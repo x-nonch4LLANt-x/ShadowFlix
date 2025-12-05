@@ -1,0 +1,391 @@
+.container {
+    min-height: 100vh;
+    background-color: #0a0a0a;
+    color: #fff;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Backdrop */
+.backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70vh;
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+    opacity: 0.3;
+    filter: blur(20px);
+}
+
+.backdropOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(10, 10, 10, 0.2), #0a0a0a);
+}
+
+.contentWrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    padding: 4rem 4%;
+    gap: 3rem;
+    align-items: flex-start;
+}
+
+/* Rating Box */
+.ratingBox {
+    background: #1a1a1a;
+    padding: 1.5rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    border: 1px solid #333;
+}
+
+.ratingScore {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #00FFFF;
+    line-height: 1;
+}
+
+.ratingLabel {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.ratingIcons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.ratingSub {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.7rem;
+    color: #666;
+}
+
+.ratingCount {
+    font-weight: bold;
+    color: #fff;
+}
+
+/* Header Content */
+.headerContent {
+    display: flex;
+    gap: 3rem;
+    flex: 1;
+}
+
+.posterSection {
+    flex-shrink: 0;
+    width: 280px;
+}
+
+.poster {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.infoSection {
+    flex: 1;
+    padding-top: 1rem;
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+}
+
+.metaRow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #ccc;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+}
+
+.qualityTag {
+    background: #333;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.metaDivider {
+    color: #444;
+}
+
+.serverRow {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.serverBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fff;
+    color: #000;
+    padding: 0.8rem 2rem;
+    border-radius: 30px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.serverBtn:hover {
+    transform: scale(1.05);
+    background: #e6e6e6;
+}
+
+.description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #ddd;
+    margin-bottom: 2rem;
+    max-width: 800px;
+}
+
+.metaDetails {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.metaDetails p {
+    margin-bottom: 0.3rem;
+}
+
+.metaDetails strong {
+    color: #ccc;
+}
+
+/* Tabs */
+.tabsContainer {
+    display: flex;
+    gap: 2rem;
+    padding: 0 4%;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #222;
+    position: relative;
+    z-index: 1;
+}
+
+.tab {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1.1rem;
+    padding: 1rem 0;
+    cursor: pointer;
+    position: relative;
+    font-weight: 500;
+}
+
+.activeTab {
+    color: #fff;
+}
+
+.activeTab::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #00FFFF;
+}
+
+/* Main Content */
+.mainContent {
+    padding: 0 4%;
+    margin-bottom: 4rem;
+    position: relative;
+    z-index: 1;
+}
+
+.castGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1.5rem;
+}
+
+.castCard {
+    text-align: center;
+}
+
+.castImg {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    background: #222;
+}
+
+.actorName {
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+}
+
+.characterRole {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+/* Similar Section */
+.similarSection {
+    padding: 0 4%;
+    margin-bottom: 4rem;
+    position: relative;
+    z-index: 1;
+}
+
+.sectionTitle {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #00FFFF;
+    padding-left: 1rem;
+}
+
+.similarGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Episodes */
+.seasonHeader {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.seasonSelector {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.seasonTag {
+    background: #222;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.activeSeason {
+    background: #00FFFF;
+    color: #000;
+    border-color: #00FFFF;
+}
+
+.episodeList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.episodeItem {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: #1a1a1a;
+    padding: 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #fff;
+    transition: background 0.2s;
+}
+
+.episodeItem:hover {
+    background: #333;
+}
+
+.activeEpisode {
+    background: #222;
+    border: 1px solid #00FFFF;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .contentWrapper {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .headerContent {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .ratingBox {
+        position: static;
+        margin-bottom: 2rem;
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 1rem 2rem;
+    }
+
+    .ratingIcons {
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    .metaRow {
+        justify-content: center;
+    }
+}
+
+/* Skeleton UI */
+.skeletonPulse {
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeletonBox {
+    background: #222;
+    border-radius: 4px;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    100% {
+        opacity: 0.6;
+    }
+}

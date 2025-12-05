@@ -1,66 +1,60 @@
-import Image from "next/image";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import NewHeroSection from "@/components/NewHeroSection";
+import MediaRow from "@/components/MediaRow";
+import { getTrending, getMovies, getSeries, getFestiveContent, getAnimations } from "@/lib/api";
 import styles from "./page.module.css";
 
 export default function Home() {
+  const [trending, setTrending] = useState([]);
+  const [latestMovies, setLatestMovies] = useState([]);
+  const [latestSeries, setLatestSeries] = useState([]);
+  const [animations, setAnimations] = useState([]);
+  const [festive, setFestive] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [trendingData, moviesData, seriesData, festiveData, animationsData] = await Promise.all([
+          getTrending(),
+          getMovies(),
+          getSeries(),
+          getFestiveContent(),
+          getAnimations()
+        ]);
+
+        setTrending(trendingData ? trendingData.slice(0, 20) : []);
+        setLatestMovies(moviesData ? moviesData.slice(0, 20) : []);
+        setLatestSeries(seriesData ? seriesData.slice(0, 20) : []);
+        setFestive(festiveData ? festiveData.slice(0, 10) : []);
+        setAnimations(animationsData ? animationsData.slice(0, 20) : []);
+      } catch (e) {
+        console.error("Error fetching home data:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen text-white">Loading ShadowFlix...</div>;
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className={styles.container}>
+      <NewHeroSection />
+
+      <div className={styles.contentRows}>
+        {trending.length > 0 && <MediaRow title="Trending Now 🔥" items={trending} />}
+        {latestMovies.length > 0 && <MediaRow title="Latest Movies" items={latestMovies} />}
+        {animations.length > 0 && <MediaRow title="Latest Animations" items={animations} />}
+        {animations.length > 0 && <MediaRow title="Animated Film" items={animations.filter(i => i.is_movie)} />}
+        {latestSeries.length > 0 && <MediaRow title="Latest TV Shows" items={latestSeries} />}
+        {festive.length > 0 && <MediaRow title="Best of Festive Holidays" items={festive} />}
+      </div>
     </div>
   );
 }

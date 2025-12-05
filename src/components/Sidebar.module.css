@@ -1,0 +1,99 @@
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 240px;
+    background: rgba(16, 17, 20, 0.95);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1rem;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+}
+
+.logoContainer {
+    margin-bottom: 3rem;
+    padding: 0 1rem;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(45deg, #00FFFF, #33E1ED);
+    /* Aqua Blue */
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    color: #888;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.navItem:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.navItem.active {
+    color: #00FFFF;
+    /* Aqua Blue */
+    background: rgba(0, 255, 255, 0.1);
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+}
+
+.label {
+    font-weight: 500;
+    font-size: 0.95rem;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.sidebar.collapsed .label {
+    opacity: 0;
+    width: 0;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 0;
+        /* Hidden by default on mobile, need hamburger */
+        padding: 0;
+    }
+
+    /* For now, keep it simple for mobile or use a bottom nav */
+}

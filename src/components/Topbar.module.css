@@ -1,0 +1,153 @@
+.topbar {
+    position: sticky;
+    top: 0;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 90;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.searchWrapper {
+    position: relative;
+    width: 400px;
+    max-width: 100%;
+}
+
+.searchContainer {
+    position: relative;
+    width: 100%;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: #666;
+    z-index: 10;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    background: #1a1b1e;
+    border: 1px solid transparent;
+    border-radius: 24px;
+    color: #fff;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.searchInput:focus {
+    outline: none;
+    background: #202124;
+    border-color: #333;
+    box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.1);
+    /* Aqua Blue glow */
+    border-radius: 24px 24px 0 0;
+    /* Flatten bottom corners when open */
+}
+
+/* Suggestions Dropdown */
+.suggestionsDropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #202124;
+    border: 1px solid #333;
+    border-top: none;
+    border-radius: 0 0 24px 24px;
+    overflow: hidden;
+    z-index: 100;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+.suggestionItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+    color: #ccc;
+}
+
+.suggestionItem:hover {
+    background: #333;
+    color: #fff;
+}
+
+.suggestionIcon {
+    color: #666;
+}
+
+.suggestionText {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.iconButton {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.iconButton:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00dc82, #36e4da);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.userIcon {
+    width: 20px;
+    height: 20px;
+    color: #000;
+}
+
+@media (max-width: 768px) {
+    .topbar {
+        padding: 0 1rem;
+    }
+
+    .searchContainer {
+        width: 200px;
+    }
+}
