@@ -110,19 +110,22 @@ a {
 
 .main-content {
   flex: 1;
-  margin-left: 80px;
+  /* margin-left: 80px; Removed for sidebar overlay */
   /* Match collapsed Sidebar width */
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   position: relative;
   z-index: 1;
+  width: 100%;
+  /* Ensure full width */
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 80px;
+    /* margin-left: 80px; Removed */
     /* Match collapsed Sidebar width */
+    width: 100%;
   }
 }

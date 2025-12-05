@@ -25,11 +25,11 @@ export default function Home() {
           getAnimations()
         ]);
 
-        setTrending(trendingData ? trendingData.slice(0, 20) : []);
-        setLatestMovies(moviesData ? moviesData.slice(0, 20) : []);
-        setLatestSeries(seriesData ? seriesData.slice(0, 20) : []);
-        setFestive(festiveData ? festiveData.slice(0, 10) : []);
-        setAnimations(animationsData ? animationsData.slice(0, 20) : []);
+        setTrending(trendingData ? trendingData.slice(0, 30) : []);
+        setLatestMovies(moviesData ? moviesData.slice(0, 30) : []);
+        setLatestSeries(seriesData ? seriesData.slice(0, 30) : []);
+        setFestive(festiveData ? festiveData.slice(0, 30) : []);
+        setAnimations(animationsData ? animationsData.slice(0, 30) : []);
       } catch (e) {
         console.error("Error fetching home data:", e);
       } finally {

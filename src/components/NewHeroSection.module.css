@@ -2,9 +2,12 @@
     display: flex;
     height: 600px;
     width: 100%;
+    max-width: 1800px;
+    /* Limit width on ultra-wide screens */
     gap: 20px;
     padding: 0 4%;
-    margin-bottom: 40px;
+    margin: 0 auto 40px auto;
+    /* Center horizontally */
 }
 
 .slider {

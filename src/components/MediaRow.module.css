@@ -19,11 +19,14 @@
     display: flex;
     gap: 15px;
     overflow-x: auto;
+    /* Enable horizontal scrolling */
     padding-bottom: 20px;
     padding-right: 2%;
     scroll-behavior: smooth;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    width: 100%;
+    /* Ensure full width usage */
 }
 
 /* Ensure cards take up appropriate width for 5 per row */
