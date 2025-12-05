@@ -6,7 +6,7 @@
 }
 
 .contentRows {
-  padding: 0 4%;
+  padding: 0 2%;
   /* Match Navbar padding */
   display: flex;
   flex-direction: column;

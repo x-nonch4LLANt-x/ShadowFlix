@@ -4,11 +4,11 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Star, Play, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { searchContent } from "@/lib/api";
+import { TmdbService } from "@/services/tmdb";
 import styles from "./NewHeroSection.module.css";
 
 const FEATURED_TITLES = [
-    { title: "Kpop Demon Hunter", color: "#d946ef", year: 2024 }, // Fallback year
+    { title: "Kpop Demon Hunter", color: "#d946ef", year: 2024 },
     { title: "Mufasa: The Lion King", color: "#eab308", year: 2024 },
     { title: "The Family Plan", color: "#3b82f6", year: 2023 },
     { title: "The Bad Guys 2", color: "#f97316", year: 2025 },
@@ -31,32 +31,51 @@ const NewHeroSection = () => {
         const fetchData = async () => {
             // Fetch Featured Movies
             const featuredPromises = FEATURED_TITLES.map(async (item) => {
-                const results = await searchContent(item.title);
-                const data = results?.[0] || {};
-                return {
-                    ...item,
-                    id: data.id || item.id, // Ensure ID is present
-                    title: data.title || data.name || item.title,
-                    description: data.overview || "No description available.",
-                    rating: data.vote_average ? data.vote_average.toFixed(1) : "N/A",
-                    image: data.backdrop_path ? `https://image.tmdb.org/t/p/original${data.backdrop_path}` : null,
-                    year: data.release_date ? new Date(data.release_date).getFullYear() : item.year,
-                    detailPath: data.detailPath || ""
-                };
+                try {
+                    const results = await TmdbService.search(item.title);
+                    // Find exact match or first result
+                    const data = results.find(r => r.title === item.title) || results[0] || {};
+
+                    // Get full details for better images
+                    let details = {};
+                    if (data.id) {
+                        details = await TmdbService.getDetails(data.id, data.media_type || "movie");
+                    }
+
+                    const finalData = { ...data, ...details };
+
+                    return {
+                        ...item,
+                        id: finalData.id || item.id,
+                        title: finalData.title || finalData.name || item.title,
+                        description: finalData.overview || "No description available.",
+                        rating: finalData.vote_average ? finalData.vote_average.toFixed(1) : "N/A",
+                        image: finalData.backdrop_path ? `https://image.tmdb.org/t/p/original${finalData.backdrop_path}` : null,
+                        year: finalData.release_date ? new Date(finalData.release_date).getFullYear() : item.year,
+                        detailPath: "" // Not needed for TMDB flow, but kept for compatibility if needed
+                    };
+                } catch (e) {
+                    console.error(`Error fetching ${item.title}:`, e);
+                    return item;
+                }
             });
 
             // Fetch Side List
             const sidePromises = SIDE_TITLES.map(async (item) => {
-                const results = await searchContent(item.title);
-                const data = results?.[0] || {};
-                return {
-                    ...item,
-                    id: data.id || Math.random(),
-                    title: data.title || data.name || item.title,
-                    rating: data.vote_average ? data.vote_average.toFixed(1) : "N/A",
-                    ep: "HD", // Placeholder
-                    image: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : null
-                };
+                try {
+                    const results = await TmdbService.search(item.title);
+                    const data = results[0] || {};
+                    return {
+                        ...item,
+                        id: data.id || Math.random(),
+                        title: data.title || data.name || item.title,
+                        rating: data.vote_average ? data.vote_average.toFixed(1) : "N/A",
+                        ep: "HD",
+                        image: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : null
+                    };
+                } catch (e) {
+                    return item;
+                }
             });
 
             const [featured, side] = await Promise.all([
@@ -64,7 +83,7 @@ const NewHeroSection = () => {
                 Promise.all(sidePromises)
             ]);
 
-            setFeaturedMovies(featured);
+            setFeaturedMovies(featured.filter(m => m.image)); // Only show items with images
             setSideList(side);
             setLoading(false);
         };
@@ -123,7 +142,7 @@ const NewHeroSection = () => {
                             <p className={styles.description}>{currentMovie.description}</p>
 
                             <div className={styles.actions}>
-                                <Link href={`/watch/${currentMovie.id}?detailPath=${encodeURIComponent(currentMovie.detailPath || "")}&title=${encodeURIComponent(currentMovie.title)}&poster=${encodeURIComponent(currentMovie.image || "")}`}>
+                                <Link href={`/watch/${currentMovie.id}?title=${encodeURIComponent(currentMovie.title)}&year=${currentMovie.year}`}>
                                     <button
                                         className={styles.playButton}
                                         style={{ backgroundColor: currentMovie.color, boxShadow: `0 0 20px ${currentMovie.color}60` }}
@@ -131,7 +150,7 @@ const NewHeroSection = () => {
                                         <Play size={20} fill="currentColor" /> Watch Now
                                     </button>
                                 </Link>
-                                <Link href={`/details/${currentMovie.id}?detailPath=${encodeURIComponent(currentMovie.detailPath || "")}&title=${encodeURIComponent(currentMovie.title)}&poster=${encodeURIComponent(currentMovie.image || "")}&overview=${encodeURIComponent(currentMovie.description)}`}>
+                                <Link href={`/details/${currentMovie.id}?title=${encodeURIComponent(currentMovie.title)}&year=${currentMovie.year}`}>
                                     <button className={styles.infoButton}>
                                         <Info size={20} /> More Info
                                     </button>
@@ -186,9 +205,11 @@ const NewHeroSection = () => {
                             </div>
                             <h3 className={styles.sideTitle}>{item.title}</h3>
                             <p className={styles.sideCategory} style={{ color: `${item.color}cc` }}>{item.category}</p>
-                            <button className={styles.sideWatchBtn} style={{ borderColor: item.color, color: item.color }}>
-                                <Play size={12} fill={item.color} color={item.color} /> Watch now
-                            </button>
+                            <Link href={`/watch/${item.id}?title=${encodeURIComponent(item.title)}`}>
+                                <button className={styles.sideWatchBtn} style={{ borderColor: item.color, color: item.color }}>
+                                    <Play size={12} fill={item.color} color={item.color} /> Watch now
+                                </button>
+                            </Link>
                         </div>
                     </div>
                 ))}

@@ -40,7 +40,11 @@ export default function Home() {
   }, []);
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen text-white">Loading ShadowFlix...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500"></div>
+      </div>
+    );
   }
 
   return (

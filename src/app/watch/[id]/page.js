@@ -1,128 +1,82 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import VideoPlayer from "@/components/VideoPlayer";
-import LoadingTerminal from "@/components/LoadingTerminal";
-import { getSources } from "@/lib/api";
+import Player from "@/components/Player";
+import { MovieboxService } from "@/services/moviebox";
 import styles from "./page.module.css";
 
 export default function WatchPage({ params }) {
     const { id } = params;
     const searchParams = useSearchParams();
-    const season = searchParams.get("season") || 1;
-    const episode = searchParams.get("episode") || 1;
-    const detailPath = searchParams.get("detailPath");
+    const title = searchParams.get("title");
+    const year = searchParams.get("year");
 
-    const [sources, setSources] = useState(null);
+    const [playerUrl, setPlayerUrl] = useState(null);
     const [loading, setLoading] = useState(true);
-    const playerRef = useRef(null);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchSources = async () => {
-            if (!detailPath) {
-                console.error("No detailPath provided");
+        const fetchStream = async () => {
+            try {
+                // If we have a title, search Moviebox to get the fresh ID/Slug
+                if (title) {
+                    const results = await MovieboxService.search(title);
+                    // Match by title
+                    const match = results.find(r => r.title.toLowerCase() === title.toLowerCase()) || results[0];
+
+                    if (match) {
+                        const url = MovieboxService.getPlayerUrl(match.id, match.subjectId);
+                        setPlayerUrl(url);
+                    } else {
+                        setError("Content not found on streaming server.");
+                    }
+                } else {
+                    // Fallback if we only have ID (assuming it's a Moviebox ID from internal nav)
+                    // But usually we pass title now.
+                    setError("Invalid content parameters.");
+                }
+            } catch (e) {
+                console.error("Error fetching stream:", e);
+                setError("Failed to load stream.");
+            } finally {
                 setLoading(false);
-                return;
             }
-            const data = await getSources(id, detailPath, season, episode);
-            // The API wrapper returns the raw response from /subject/play
-            // Based on stream.py, it returns a dict with file details.
-            // Let's log it to be sure during dev, but assume it has 'list' or 'url'.
-            console.log("Sources data:", data);
-
-            // Handle MovieBox response structure: data.data.streams
-            const innerData = data.data || data;
-            const streams = innerData.streams || innerData.list || (Array.isArray(innerData) ? innerData : [innerData]);
-
-            if (streams && streams.length > 0) {
-                setSources(streams);
-            } else {
-                setSources(null);
-            }
-            setLoading(false);
         };
-        fetchSources();
-    }, [id, detailPath, season, episode]);
 
-    const handlePlayerReady = (player) => {
-        playerRef.current = player;
-        // You can handle player events here, for example:
-        player.on("waiting", () => {
-            videojs.log("player is waiting");
-        });
-        player.on("dispose", () => {
-            videojs.log("player will dispose");
-        });
-    };
+        fetchStream();
+    }, [title, year]);
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <LoadingTerminal />
+            <div className="flex items-center justify-center min-h-screen bg-black">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500"></div>
             </div>
         );
     }
-    if (!sources) return <div className={styles.error}>No sources found</div>;
 
-    // Extract the best source (e.g., m3u8 or mp4)
-    // Assuming sources structure from moviebox-api wrapper
-    // It usually returns a list of dictionaries or a single URL?
-    // Let's assume it returns a list of { file: 'url', type: 'video/mp4' }
-    // We'll take the first one for now.
-
-    // MOCK LOGIC: If sources is a list, map to video.js format
-    // If sources is an object with 'url', use that.
-    // MOCK LOGIC: If sources is a list, map to video.js format
-    // MovieBox usually returns { path: "url", quality: "720p" } etc.
-    // Determine if we have a direct video source or a webpage URL
-    const source = sources[0]; // Take the first one
-    const sourceUrl = source.url || source.path || source.file;
-    const isWebPage = sourceUrl && !sourceUrl.match(/\.(mp4|m3u8|mkv)$/i);
-
-    if (isWebPage) {
+    if (error) {
         return (
-            <div className={styles.container}>
-                <iframe
-                    src={sourceUrl}
-                    className={styles.iframe}
-                    allowFullScreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                />
+            <div className="flex items-center justify-center min-h-screen bg-black text-white">
+                <div className="text-center">
+                    <h2 className="text-xl font-bold mb-2">Oops!</h2>
+                    <p className="text-gray-400">{error}</p>
+                    <button
+                        onClick={() => window.history.back()}
+                        className="mt-4 px-4 py-2 bg-purple-600 rounded hover:bg-purple-700"
+                    >
+                        Go Back
+                    </button>
+                </div>
             </div>
         );
     }
-
-    let videoJsSources = [];
-    if (Array.isArray(sources)) {
-        videoJsSources = sources.map(s => {
-            const originalUrl = s.url || s.path || s.file;
-            // Use proxy for MP4/MKV to handle Referer
-            // M3U8 might be tricky if it has relative segments, but let's try proxying the manifest first.
-            // For now, assume MP4 needs proxy.
-            const isStream = originalUrl.includes(".m3u8");
-            const proxyUrl = `/api/proxy?url=${encodeURIComponent(originalUrl)}`;
-
-            return {
-                src: proxyUrl,
-                type: isStream ? "application/x-mpegURL" : "video/mp4",
-                label: s.quality || "Auto"
-            };
-        }).filter(s => s.src);
-    }
-
-    const videoOptions = {
-        autoplay: true,
-        controls: true,
-        responsive: true,
-        fluid: true,
-        sources: videoJsSources,
-        fill: true,
-    };
 
     return (
-        <div className={styles.container}>
-            <VideoPlayer options={videoOptions} onReady={handlePlayerReady} />
+        <div className="w-full h-screen bg-black flex items-center justify-center p-4">
+            <div className="w-full max-w-6xl aspect-video">
+                <Player url={playerUrl} title={title} />
+            </div>
         </div>
     );
 }
