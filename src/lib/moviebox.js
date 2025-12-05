@@ -1,13 +1,13 @@
 import axios from "axios";
 
-const BASE_URL = "https://h5.aoneroom.com/wefeed-h5-bff/web";
+const BASE_URL = "https://moviebox.ph/wefeed-h5-bff/web";
 
 const DEFAULT_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:137.0) Gecko/20100101 Firefox/137.0",
     "Accept": "application/json, text/plain, */*",
     "Content-Type": "application/json",
-    "Origin": "https://h5.aoneroom.com",
-    "Referer": "https://h5.aoneroom.com/",
+    "Origin": "https://moviebox.ph",
+    "Referer": "https://moviebox.ph/",
 };
 
 class MovieBoxAPI {
@@ -23,7 +23,7 @@ class MovieBoxAPI {
         if (this.sessionInitialized) return;
         try {
             // Use absolute URL to avoid baseURL issue
-            const response = await axios.get("https://h5.aoneroom.com/wefeed-h5-bff/app/get-latest-app-pkgs?app_name=moviebox", {
+            const response = await axios.get("https://moviebox.ph/wefeed-h5-bff/app/get-latest-app-pkgs?app_name=moviebox", {
                 headers: DEFAULT_HEADERS
             });
             const setCookie = response.headers["set-cookie"];
@@ -118,7 +118,7 @@ class MovieBoxAPI {
             // Payload: { subjectId, se, ep } (Query params in Python, but let's check if POST works or if we need GET)
             // Python wrapper uses GET with params.
 
-            const referer = `https://h5.aoneroom.com/movies/${detailPath}`;
+            const referer = `https://moviebox.ph/movies/${detailPath}`;
 
             await this.initSession();
             const response = await this.client.get("/subject/play", {
