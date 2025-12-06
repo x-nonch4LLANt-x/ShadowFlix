@@ -71,5 +71,20 @@ export const FootballService = {
             console.error('Error fetching live matches:', error);
             return [];
         }
+    },
+
+    async search(query) {
+        try {
+            const matches = await this.getFootballMatches();
+            const lowerQuery = query.toLowerCase();
+            return matches.filter(match =>
+                (match.title && match.title.toLowerCase().includes(lowerQuery)) ||
+                (match.teams && match.teams.home && match.teams.home.name.toLowerCase().includes(lowerQuery)) ||
+                (match.teams && match.teams.away && match.teams.away.name.toLowerCase().includes(lowerQuery))
+            );
+        } catch (error) {
+            console.error("Error searching football matches:", error);
+            return [];
+        }
     }
 };

@@ -5,7 +5,7 @@ import NewHeroSection from "@/components/NewHeroSection";
 import MediaRow from "@/components/MediaRow";
 import SportsCard from "@/components/SportsCard";
 import { getTrending, getMovies, getSeries, getFestiveContent, getAnimations } from "@/lib/api";
-import { SportsService } from "@/services/sports";
+import { FootballService } from "@/services/football";
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -26,7 +26,7 @@ export default function Home() {
           getSeries(),
           getFestiveContent(),
           getAnimations(),
-          SportsService.getLiveMatches()
+          FootballService.getFootballMatches()
         ]);
 
         setTrending(trendingData ? trendingData.slice(0, 30) : []);
@@ -34,7 +34,21 @@ export default function Home() {
         setLatestSeries(seriesData ? seriesData.slice(0, 30) : []);
         setFestive(festiveData ? festiveData.slice(0, 30) : []);
         setAnimations(animationsData ? animationsData.slice(0, 30) : []);
-        setFootballMatches(sportsData || []);
+
+        // Filter for upcoming/live matches and limit to 7
+        const now = new Date();
+        const upcoming = (sportsData || [])
+          .filter(m => {
+            const matchDate = new Date(m.date);
+            // Include live (started recently) or future
+            // Let's say if it started within the last 2 hours it's live/recent
+            const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+            return matchDate > twoHoursAgo;
+          })
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+          .slice(0, 7);
+
+        setFootballMatches(upcoming);
       } catch (e) {
         console.error("Error fetching home data:", e);
       } finally {
@@ -59,16 +73,13 @@ export default function Home() {
       <div className={styles.contentRows}>
         {footballMatches.length > 0 && (
           <div className={styles.row}>
-            <h2 className={styles.title}>Football</h2>
-            <div className={styles.footballSection}>
-              <div className={styles.datesBlock}>
-                DATES
-              </div>
-              <div className={styles.matchesList}>
-                {footballMatches.slice(0, 10).map((match) => (
-                  <SportsCard key={match.id} match={match} />
-                ))}
-              </div>
+            <h2 className={styles.title}>Upcoming Football ⚽</h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 px-4 scrollbar-hide">
+              {footballMatches.map((match) => (
+                <div key={match.id} style={{ minWidth: '300px' }}>
+                  <SportsCard match={match} />
+                </div>
+              ))}
             </div>
           </div>
         )}

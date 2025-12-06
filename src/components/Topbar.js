@@ -7,6 +7,8 @@ import styles from "./Topbar.module.css";
 
 import { getSuggestions } from "@/lib/api";
 
+import { FootballService } from "@/services/football";
+
 export default function Topbar({ onMenuClick }) {
     const [query, setQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
@@ -16,8 +18,22 @@ export default function Topbar({ onMenuClick }) {
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
             if (query.trim().length > 1) {
-                const results = await getSuggestions(query);
-                setSuggestions(results.slice(0, 5)); // Limit to 5 suggestions
+                const [mediaResults, footballResults] = await Promise.all([
+                    getSuggestions(query),
+                    FootballService.search(query)
+                ]);
+
+                // Format football results to match suggestion structure or distinguish them
+                const formattedFootball = footballResults.map(match => ({
+                    id: match.id,
+                    title: match.title || `${match.teams?.home?.name} vs ${match.teams?.away?.name}`,
+                    type: 'football',
+                    is_football: true
+                }));
+
+                // Combine and limit
+                const combined = [...formattedFootball, ...mediaResults].slice(0, 7);
+                setSuggestions(combined);
                 setShowSuggestions(true);
             } else {
                 setSuggestions([]);
@@ -39,12 +55,12 @@ export default function Topbar({ onMenuClick }) {
     const handleSuggestionClick = (suggestion) => {
         setQuery(suggestion.title);
         setShowSuggestions(false);
-        router.push(`/watch/${suggestion.id}`); // Direct to watch or search? Let's go to search for now or watch if it's a direct hit.
-        // Actually, Google autofill usually fills the bar and searches. 
-        // But here, if it's a specific movie, maybe go to details?
-        // Let's go to details if we have an ID, or search if it's just a keyword.
-        // The API returns items with IDs.
-        router.push(`/details/${suggestion.id}`);
+
+        if (suggestion.is_football) {
+            router.push(`/watch/football/${suggestion.id}`);
+        } else {
+            router.push(`/details/${suggestion.id}`);
+        }
     };
 
     return (

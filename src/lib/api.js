@@ -1,4 +1,5 @@
 import axios from "axios";
+import { movieBox } from "@/lib/moviebox";
 
 const API_URL = "/api/moviebox";
 
@@ -58,6 +59,15 @@ const extractList = (data) => {
 };
 
 export const getTrending = async () => {
+    if (typeof window === "undefined") {
+        try {
+            const data = await movieBox.getTrending();
+            return extractList(data).map(mapMovieBoxItem);
+        } catch (error) {
+            console.error("Error fetching trending (server):", error);
+            return [];
+        }
+    }
     try {
         const response = await api.get("", {
             params: { endpoint: "trending" },
@@ -70,6 +80,15 @@ export const getTrending = async () => {
 };
 
 export const getMovies = async () => {
+    if (typeof window === "undefined") {
+        try {
+            const data = await movieBox.getMovies();
+            return extractList(data).map(mapMovieBoxItem);
+        } catch (error) {
+            console.error("Error fetching movies (server):", error);
+            return [];
+        }
+    }
     try {
         const response = await api.get("", {
             params: { endpoint: "movies" },
@@ -82,6 +101,15 @@ export const getMovies = async () => {
 };
 
 export const getSeries = async () => {
+    if (typeof window === "undefined") {
+        try {
+            const data = await movieBox.getSeries();
+            return extractList(data).map(mapMovieBoxItem);
+        } catch (error) {
+            console.error("Error fetching series (server):", error);
+            return [];
+        }
+    }
     try {
         const response = await api.get("", {
             params: { endpoint: "series" },
@@ -94,32 +122,23 @@ export const getSeries = async () => {
 };
 
 export const getAnimations = async () => {
-    try {
-        // Search for "Animation" or use a specific category if available
-        const response = await api.get("", {
-            params: { endpoint: "search", query: "Animation", page: 1 },
-        });
-        return extractList(response.data).map(mapMovieBoxItem);
-    } catch (error) {
-        console.error("Error fetching animations:", error);
-        return [];
-    }
+    return searchContent("Animation", 1);
 };
 
 export const getFestiveContent = async () => {
-    try {
-        // Search for "Christmas" to get festive content
-        const response = await api.get("", {
-            params: { endpoint: "search", query: "Christmas", page: 1 },
-        });
-        return extractList(response.data).map(mapMovieBoxItem);
-    } catch (error) {
-        console.error("Error fetching festive content:", error);
-        return [];
-    }
+    return searchContent("Christmas", 1);
 };
 
 export const searchContent = async (query, page = 1) => {
+    if (typeof window === "undefined") {
+        try {
+            const data = await movieBox.search(query.trim(), page);
+            return extractList(data).map(mapMovieBoxItem);
+        } catch (error) {
+            console.error("Error searching (server):", error);
+            return [];
+        }
+    }
     try {
         const response = await api.get("", {
             params: { endpoint: "search", query: query.trim(), page },
@@ -132,6 +151,15 @@ export const searchContent = async (query, page = 1) => {
 };
 
 export const getSuggestions = async (query) => {
+    if (typeof window === "undefined") {
+        try {
+            const data = await movieBox.getSuggestions(query.trim());
+            return extractList(data).map(mapMovieBoxItem);
+        } catch (error) {
+            console.error("Error fetching suggestions (server):", error);
+            return [];
+        }
+    }
     try {
         const response = await api.get("", {
             params: { endpoint: "suggestions", query: query.trim() },
@@ -167,6 +195,15 @@ const mapMovieBoxDetails = (item) => {
 };
 
 export const getDetails = async (id, detailPath) => {
+    if (typeof window === "undefined") {
+        try {
+            const data = await movieBox.getDetails(id, detailPath);
+            return mapMovieBoxDetails(data);
+        } catch (error) {
+            console.error("Error fetching details (server):", error);
+            return null;
+        }
+    }
     try {
         const response = await api.get("", {
             params: { endpoint: "details", id, detailPath },
@@ -179,6 +216,15 @@ export const getDetails = async (id, detailPath) => {
 };
 
 export const getSources = async (id, detailPath, season = 1, episode = 1) => {
+    if (typeof window === "undefined") {
+        try {
+            const data = await movieBox.getSources(id, detailPath, season, episode);
+            return data;
+        } catch (error) {
+            console.error("Error fetching sources (server):", error);
+            return null;
+        }
+    }
     try {
         const response = await api.get("", {
             params: {

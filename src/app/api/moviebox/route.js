@@ -41,7 +41,10 @@ export async function GET(request) {
             if (!query) {
                 return NextResponse.json({ error: "Query required for search" }, { status: 400 });
             }
-            data = await movieBox.search(query);
+            const page = searchParams.get("page") || 1;
+            console.log(`[API] Searching for: ${query}, page: ${page}`);
+            data = await movieBox.search(query, page);
+            console.log(`[API] Search result count: ${data?.data?.items?.length || 0}`);
         } else if (endpoint === "suggestions") {
             if (!query) {
                 return NextResponse.json({ error: "Query required for suggestions" }, { status: 400 });
