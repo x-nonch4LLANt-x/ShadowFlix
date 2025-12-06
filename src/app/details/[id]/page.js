@@ -6,7 +6,6 @@ import { Play, Star, Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Youtu
 import { TmdbService } from "@/services/tmdb";
 import { MovieboxService } from "@/services/moviebox";
 import MediaCard from "@/components/MediaCard";
-import Player from "@/components/Player";
 import styles from "./page.module.css";
 
 export default function DetailsPage({ params }) {
@@ -33,8 +32,6 @@ export default function DetailsPage({ params }) {
     const [similarItems, setSimilarItems] = useState([]);
     const [loading, setLoading] = useState(!initialTitle);
     const [activeTab, setActiveTab] = useState("cast"); // cast, episodes
-    const [playerUrl, setPlayerUrl] = useState(null);
-    const [isPlayerLoading, setIsPlayerLoading] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -88,30 +85,6 @@ export default function DetailsPage({ params }) {
         fetchData();
     }, [id, initialTitle]);
 
-    const handleWatch = async () => {
-        setIsPlayerLoading(true);
-        // Use MovieboxService to find the stream
-        // We need to search Moviebox again to get the exact slug and ID if we don't have them perfectly
-        // But usually 'id' param in URL is the Moviebox ID if navigated from search
-
-        // If 'id' is a number (TMDB ID), we need to search Moviebox
-        // If 'id' is a string (Moviebox ID), we might be good
-
-        // Let's assume we search by title to be safe and get the fresh link
-        if (item?.title) {
-            const mbResults = await MovieboxService.search(item.title);
-            const match = mbResults.find(r => r.title.toLowerCase() === item.title.toLowerCase()) || mbResults[0];
-
-            if (match) {
-                const url = MovieboxService.getPlayerUrl(match.id, match.subjectId);
-                setPlayerUrl(url);
-            } else {
-                alert("Stream not found on Moviebox.");
-            }
-        }
-        setIsPlayerLoading(false);
-    };
-
     if (loading) {
         return <div className="flex items-center justify-center min-h-screen text-white">Loading...</div>;
     }
@@ -126,56 +99,43 @@ export default function DetailsPage({ params }) {
             </div>
 
             <div className={styles.contentWrapper}>
-                {/* Player Overlay or Poster */}
-                {playerUrl ? (
-                    <div className="w-full max-w-5xl mx-auto mb-8 z-20 relative">
-                        <Player url={playerUrl} title={item.title} />
-                        <button
-                            onClick={() => setPlayerUrl(null)}
-                            className="mt-4 px-4 py-2 bg-red-600 rounded text-white hover:bg-red-700 transition"
-                        >
-                            Close Player
-                        </button>
+                {/* Header Content */}
+                <div className={styles.headerContent}>
+                    <div className={styles.posterSection}>
+                        <img src={item.poster} alt={item.title} className={styles.poster} />
                     </div>
-                ) : (
-                    <div className={styles.headerContent}>
-                        <div className={styles.posterSection}>
-                            <img src={item.poster} alt={item.title} className={styles.poster} />
+
+                    <div className={styles.infoSection}>
+                        <h1 className={styles.title}>{item.title}</h1>
+
+                        <div className={styles.metaRow}>
+                            <span className={styles.qualityTag}>HD</span>
+                            <span className={styles.year}>{item.year}</span>
+                            <span className={styles.metaDivider}>|</span>
+                            <span className={styles.duration}>{tmdbData?.runtime ? `${tmdbData.runtime} min` : "Unknown"}</span>
+                            <span className={styles.metaDivider}>|</span>
+                            <span>{tmdbData?.genres?.map(g => g.name).join(", ") || "Action, Drama"}</span>
                         </div>
 
-                        <div className={styles.infoSection}>
-                            <h1 className={styles.title}>{item.title}</h1>
+                        <div className={styles.serverRow}>
+                            <Link
+                                href={`/watch/${id}?title=${encodeURIComponent(item.title)}&year=${item.year}`}
+                                className={styles.serverBtn}
+                            >
+                                <Play fill="currentColor" size={16} /> Watch Online
+                            </Link>
+                        </div>
 
-                            <div className={styles.metaRow}>
-                                <span className={styles.qualityTag}>HD</span>
-                                <span className={styles.year}>{item.year}</span>
-                                <span className={styles.metaDivider}>|</span>
-                                <span className={styles.duration}>{tmdbData?.runtime ? `${tmdbData.runtime} min` : "Unknown"}</span>
-                                <span className={styles.metaDivider}>|</span>
-                                <span>{tmdbData?.genres?.map(g => g.name).join(", ") || "Action, Drama"}</span>
-                            </div>
+                        <p className={styles.description}>
+                            {item.overview || "No description available."}
+                        </p>
 
-                            <div className={styles.serverRow}>
-                                <button
-                                    onClick={handleWatch}
-                                    disabled={isPlayerLoading}
-                                    className={styles.serverBtn}
-                                >
-                                    {isPlayerLoading ? "Loading..." : <><Play fill="currentColor" size={16} /> Watch Online</>}
-                                </button>
-                            </div>
-
-                            <p className={styles.description}>
-                                {item.overview || "No description available."}
-                            </p>
-
-                            <div className={styles.metaDetails}>
-                                <p><strong>Country:</strong> {tmdbData?.production_countries?.[0]?.name || "United States"}</p>
-                                <p><strong>Production:</strong> {tmdbData?.production_companies?.[0]?.name || "N/A"}</p>
-                            </div>
+                        <div className={styles.metaDetails}>
+                            <p><strong>Country:</strong> {tmdbData?.production_countries?.[0]?.name || "United States"}</p>
+                            <p><strong>Production:</strong> {tmdbData?.production_companies?.[0]?.name || "N/A"}</p>
                         </div>
                     </div>
-                )}
+                </div>
             </div>
 
             {/* Tabs Navigation */}
@@ -218,7 +178,7 @@ export default function DetailsPage({ params }) {
                     ))}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

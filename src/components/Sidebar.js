@@ -17,7 +17,7 @@ export default function Sidebar({ isOpen, onToggle }) {
         { name: "Animations", icon: Smile, href: "/animations" },
         { name: "Cartoons", icon: Gamepad2, href: "/cartoon" },
         { name: "Cartoon Series", icon: Tv, href: "/cartoon-series" },
-        { name: "Sports", icon: Trophy, href: "/sports" },
+        { name: "Football", icon: Trophy, href: "/sports" },
         { name: "Christmas", icon: Gift, href: "/christmas" },
     ];
 

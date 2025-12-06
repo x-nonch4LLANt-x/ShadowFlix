@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import VideoPlayer from "@/components/VideoPlayer";
-import Player from "@/components/Player";
+import MovieboxPlayer from "@/components/MovieboxPlayer";
 import MediaRow from "@/components/MediaRow";
 import { MovieboxService } from "@/services/moviebox";
 import { getSuggestions, getTrending } from "@/lib/api";
@@ -14,6 +14,7 @@ export default function WatchPage({ params }) {
     const searchParams = useSearchParams();
     const title = searchParams.get("title");
     const year = searchParams.get("year");
+    const type = searchParams.get("type"); // "sports" or others
 
     const [sources, setSources] = useState(null);
     const [iframeUrl, setIframeUrl] = useState(null);
@@ -25,23 +26,39 @@ export default function WatchPage({ params }) {
     useEffect(() => {
         const fetchStream = async () => {
             try {
-                const type = searchParams.get("type");
-
                 if (type === "sports") {
                     // Handle Sports Stream
-                    const { SportsService } = await import("@/services/sports");
-                    const match = await SportsService.getMatchDetails(id);
+                    const { FootballService } = await import("@/services/football");
+                    const match = await FootballService.getMatch(id);
 
                     if (match) {
-                        if (match.playPath) {
-                            // HLS Stream
-                            setSources([{
-                                url: match.playPath,
-                                type: "application/x-mpegURL", // Standard HLS MIME type
-                                label: "Auto"
-                            }]);
+                        // Try to get a stream from the available sources
+                        if (match.sources && match.sources.length > 0) {
+                            const source = match.sources[0];
+                            const streams = await FootballService.getStream(source.source, source.id);
+
+                            if (streams && streams.length > 0) {
+                                // Prefer embedUrl as per user request ("USE THE ORIGINAL VIDEO PLAYER")
+                                const stream = streams[0];
+                                if (stream.embedUrl) {
+                                    setIframeUrl(stream.embedUrl);
+                                    // Clear HLS sources if we are using iframe
+                                    setSources([]);
+                                } else if (stream.streamUrl) {
+                                    setSources([{
+                                        url: stream.streamUrl,
+                                        type: "application/x-mpegURL",
+                                        label: "Auto"
+                                    }]);
+                                    setIframeUrl(null);
+                                } else {
+                                    setError("Stream format not supported.");
+                                }
+                            } else {
+                                setError("Stream not available for this match.");
+                            }
                         } else {
-                            setError("Stream not available for this match yet.");
+                            setError("No stream sources available for this match.");
                         }
                     } else {
                         setError("Match not found.");
@@ -51,28 +68,15 @@ export default function WatchPage({ params }) {
                 }
 
                 if (title) {
-                    // Fetch stream sources
+                    // MOVIE/SERIES LOGIC: ALWAYS USE IFRAME (EXACT REPLICA)
                     const results = await MovieboxService.search(title);
                     const match = results.find(r => r.title.toLowerCase() === title.toLowerCase()) || results[0];
 
                     if (match) {
-                        const isMovie = !searchParams.get("season");
-                        const season = isMovie ? 0 : (parseInt(searchParams.get("season")) || 1);
-                        const episode = isMovie ? 0 : (parseInt(searchParams.get("episode")) || 1);
-
-                        const data = await MovieboxService.getStreamSources(match.subjectId, match.id, season, episode);
-
-                        if (data && data.data && data.data.streams && data.data.streams.length > 0) {
-                            // Sort sources by resolution (highest first)
-                            const sortedStreams = data.data.streams.sort((a, b) => {
-                                const resA = parseInt(a.resolutions) || 0;
-                                const resB = parseInt(b.resolutions) || 0;
-                                return resB - resA;
-                            });
-                            setSources(sortedStreams);
-                        } else {
-                            setIframeUrl(MovieboxService.getPlayerUrl(match.id, match.subjectId));
-                        }
+                        // Construct the exact player URL from moviebox.ph
+                        const url = MovieboxService.getPlayerUrl(match.id, match.subjectId);
+                        setIframeUrl(url);
+                        setSources(null); // Ensure we don't try to use VideoPlayer
                     } else {
                         setError("Content not found on streaming server.");
                     }
@@ -98,7 +102,7 @@ export default function WatchPage({ params }) {
         };
 
         fetchStream();
-    }, [title, year, id, searchParams]);
+    }, [title, year, id, searchParams, type]);
 
     const handlePlayerReady = (player) => {
         playerRef.current = player;
@@ -129,55 +133,78 @@ export default function WatchPage({ params }) {
         );
     }
 
+    // === RENDER LOGIC ===
+
+    // 1. SPORTS PLAYER (Legacy Layout)
+    if (type === "sports") {
+        return (
+            <div className="min-h-screen bg-[#1a1a1a] text-white flex flex-col">
+                {/* Header */}
+                <header className="p-4 bg-black/50 backdrop-blur-md border-b border-white/10 flex items-center gap-4">
+                    <button onClick={() => window.history.back()} className="text-gray-400 hover:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+                    </button>
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                        ShadowFlix Sports
+                    </h1>
+                </header>
+
+                {/* Main Player Area */}
+                <main className="flex-1 flex flex-col items-center p-4 gap-8">
+                    <div className="w-full max-w-7xl aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-white/10 relative">
+                        {iframeUrl ? (
+                            <iframe
+                                src={iframeUrl}
+                                className="w-full h-full border-0"
+                                allowFullScreen
+                                allow="autoplay; encrypted-media"
+                            />
+                        ) : sources ? (
+                            <VideoPlayer
+                                options={{
+                                    autoplay: true,
+                                    controls: false,
+                                    responsive: true,
+                                    fluid: true,
+                                    sources: sources.map(s => ({
+                                        src: s.url,
+                                        type: "video/mp4",
+                                        label: s.resolutions || "Auto"
+                                    })),
+                                    fill: true,
+                                }}
+                                onReady={handlePlayerReady}
+                                title={title}
+                            />
+                        ) : (
+                            <div className="flex items-center justify-center w-full h-full">
+                                <p className="text-gray-400">No stream available</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* More Like This Section */}
+                    <div className="w-full max-w-7xl">
+                        <h2 className="text-2xl font-bold mb-4 text-cyan-400 border-l-4 border-cyan-400 pl-3">
+                            More Like This
+                        </h2>
+                        {suggestions.length > 0 ? (
+                            <MediaRow title="" items={suggestions} />
+                        ) : (
+                            <p className="text-gray-500">No recommendations available.</p>
+                        )}
+                    </div>
+                </main>
+            </div>
+        );
+    }
+
+    // 2. MOVIEBOX PLAYER (Immersive / Full Screen)
+    // This renders ONLY the player, covering everything else.
     return (
-        <div className="min-h-screen bg-[#1a1a1a] text-white flex flex-col">
-            {/* Header */}
-            <header className="p-4 bg-black/50 backdrop-blur-md border-b border-white/10 flex items-center gap-4">
-                <button onClick={() => window.history.back()} className="text-gray-400 hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                </button>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                    ShadowFlix
-                </h1>
-            </header>
-
-            {/* Main Player Area */}
-            <main className="flex-1 flex flex-col items-center p-4 gap-8">
-                <div className="w-full max-w-7xl aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-white/10 relative">
-                    {sources ? (
-                        <VideoPlayer
-                            options={{
-                                autoplay: true,
-                                controls: false, // Custom controls used
-                                responsive: true,
-                                fluid: true,
-                                sources: sources.map(s => ({
-                                    src: s.url,
-                                    type: "video/mp4",
-                                    label: s.resolutions || "Auto"
-                                })),
-                                fill: true,
-                            }}
-                            onReady={handlePlayerReady}
-                            title={title}
-                        />
-                    ) : iframeUrl ? (
-                        <Player url={iframeUrl} title={title} />
-                    ) : null}
-                </div>
-
-                {/* More Like This Section */}
-                <div className="w-full max-w-7xl">
-                    <h2 className="text-2xl font-bold mb-4 text-cyan-400 border-l-4 border-cyan-400 pl-3">
-                        More Like This
-                    </h2>
-                    {suggestions.length > 0 ? (
-                        <MediaRow title="" items={suggestions} />
-                    ) : (
-                        <p className="text-gray-500">No recommendations available.</p>
-                    )}
-                </div>
-            </main>
-        </div>
+        <MovieboxPlayer
+            url={iframeUrl}
+            onBack={() => window.history.back()}
+        />
     );
 }

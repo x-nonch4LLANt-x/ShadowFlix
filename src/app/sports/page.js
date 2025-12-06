@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { SportsService } from "@/services/sports";
+import { FootballService } from "@/services/football";
 import SportsCard from "@/components/SportsCard";
 import { Calendar, Filter } from "lucide-react";
 import styles from "./page.module.css";
@@ -9,13 +9,28 @@ import styles from "./page.module.css";
 export default function SportsPage() {
     const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedDate, setSelectedDate] = useState("all");
+    const [selectedDate, setSelectedDate] = useState(null); // null means all, or we can default to today
+    const [dates, setDates] = useState([]);
 
     useEffect(() => {
         const fetchMatches = async () => {
             try {
-                const data = await SportsService.getLiveMatches();
+                const data = await FootballService.getFootballMatches();
                 setMatches(data);
+
+                // Extract unique dates
+                const uniqueDates = [...new Set(data.map(match => {
+                    const d = new Date(match.date);
+                    return d.toDateString();
+                }))].sort((a, b) => new Date(a) - new Date(b));
+
+                setDates(uniqueDates);
+
+                // Default to first date if available, or "all" logic
+                if (uniqueDates.length > 0) {
+                    setSelectedDate(uniqueDates[0]);
+                }
+
             } catch (error) {
                 console.error("Error fetching sports data:", error);
             } finally {
@@ -26,19 +41,9 @@ export default function SportsPage() {
         fetchMatches();
     }, []);
 
-    // Separate matches into LIVE and POPULAR
-    // Assuming "Living" status from API. The API returns "MatchNotStart" or "Living" (inferred).
-    // Let's check the API response again. It had "status": "MatchNotStart".
-    // I will assume "Living" or "Live" or similar for live matches.
-    // Actually, looking at the API response, status was "MatchNotStart".
-    // I will filter based on status !== "MatchNotStart" for live, or just check if it contains "Live".
-    // Wait, the API response had "statusLive": "_UnknownLiveStatus".
-    // I'll stick to `status === "Living"` as per previous code, but I might need to adjust if the API uses different values.
-    // The previous code used `match.status === "Living"`.
-    // I'll keep it, but also check for "Live" just in case.
-
-    const liveMatches = matches.filter(match => match.status === "Living" || match.status === "Live");
-    const popularMatches = matches.filter(match => match.status !== "Living" && match.status !== "Live");
+    const filteredMatches = selectedDate
+        ? matches.filter(match => new Date(match.date).toDateString() === selectedDate)
+        : matches;
 
     if (loading) {
         return (
@@ -57,63 +62,45 @@ export default function SportsPage() {
                     <h3>DATES</h3>
                 </div>
                 <div className={styles.datesList}>
-                    <button
-                        className={`${styles.dateButton} ${selectedDate === "all" ? styles.active : ""}`}
-                        onClick={() => setSelectedDate("all")}
-                    >
-                        All Matches
-                    </button>
-                    <button
-                        className={`${styles.dateButton} ${selectedDate === "today" ? styles.active : ""}`}
-                        onClick={() => setSelectedDate("today")}
-                    >
-                        Today
-                    </button>
-                    <button
-                        className={`${styles.dateButton} ${selectedDate === "tomorrow" ? styles.active : ""}`}
-                        onClick={() => setSelectedDate("tomorrow")}
-                    >
-                        Tomorrow
-                    </button>
+                    {dates.map((dateStr) => {
+                        const dateObj = new Date(dateStr);
+                        const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+                        const dayNum = dateObj.getDate();
+                        const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+
+                        return (
+                            <button
+                                key={dateStr}
+                                className={`${styles.dateButton} ${selectedDate === dateStr ? styles.active : ""}`}
+                                onClick={() => setSelectedDate(dateStr)}
+                            >
+                                <span className={styles.dayName}>{dayName}</span>
+                                <span className={styles.fullDate}>{dayNum} {month}</span>
+                            </button>
+                        );
+                    })}
                 </div>
             </aside>
 
             {/* Main Content */}
             <main className={styles.content}>
-                {/* LIVE Section */}
-                {liveMatches.length > 0 && (
-                    <section className={styles.section}>
-                        <div className={styles.sectionHeader}>
-                            <h2 className={styles.sectionTitle}>LIVE</h2>
-                            <div className={styles.livePulse}></div>
-                        </div>
-                        <div className={styles.grid}>
-                            {liveMatches.map((match) => (
-                                <SportsCard key={match.id} match={match} />
-                            ))}
-                        </div>
-                    </section>
-                )}
+                <section className={styles.section}>
+                    <div className={styles.sectionHeader}>
+                        <h2 className={styles.sectionTitle}>
+                            {selectedDate ? new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : "All Matches"}
+                        </h2>
+                    </div>
+                    <div className={styles.grid}>
+                        {filteredMatches.map((match) => (
+                            <SportsCard key={match.id} match={match} />
+                        ))}
+                    </div>
+                </section>
 
-                {/* POPULAR Section */}
-                {popularMatches.length > 0 && (
-                    <section className={styles.section}>
-                        <div className={styles.sectionHeader}>
-                            <h2 className={styles.sectionTitle}>POPULAR</h2>
-                        </div>
-                        <div className={styles.grid}>
-                            {popularMatches.map((match) => (
-                                <SportsCard key={match.id} match={match} />
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {matches.length === 0 && (
+                {filteredMatches.length === 0 && (
                     <div className={styles.noMatches}>
                         <Filter className={styles.noMatchesIcon} />
-                        <h3>No football matches available</h3>
-                        <p>Check back later for upcoming matches</p>
+                        <h3>No matches found for this date</h3>
                     </div>
                 )}
             </main>

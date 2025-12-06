@@ -48,6 +48,6 @@ export const MovieboxService = {
      * Get the player URL (Legacy/Fallback)
      */
     getPlayerUrl: (slug: string, id: string): string => {
-        return `https://lok-lok.cc/spa/videoPlayPage/movies/${slug}?id=${id}`;
+        return `https://lok-lok.cc/spa/videoPlayPage/movies/${slug}?id=${id}&type=/movie/detail&lang=en`;
     }
 };

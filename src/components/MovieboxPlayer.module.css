@@ -1,0 +1,49 @@
+.playerContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+}
+
+.iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    flex: 1;
+}
+
+.topBar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10000;
+    /* Above iframe */
+    pointer-events: none;
+    /* Let clicks pass through around the button */
+}
+
+.backBtn {
+    pointer-events: auto;
+    /* Re-enable clicks for the button */
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    transition: background 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.backBtn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
