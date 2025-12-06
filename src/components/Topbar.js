@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, Bell, User } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 import styles from "./Topbar.module.css";
 
 import { getSuggestions } from "@/lib/api";
 
-export default function Topbar() {
+export default function Topbar({ onMenuClick }) {
     const [query, setQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -49,6 +49,14 @@ export default function Topbar() {
 
     return (
         <header className={styles.topbar}>
+            <button
+                className={styles.menuButton}
+                onClick={onMenuClick}
+                aria-label="Toggle sidebar"
+            >
+                <Menu className={styles.menuIcon} />
+            </button>
+
             <div className={styles.searchWrapper}>
                 <form onSubmit={handleSearch} className={styles.searchContainer}>
                     <Search className={styles.searchIcon} />
@@ -79,15 +87,6 @@ export default function Topbar() {
                         ))}
                     </div>
                 )}
-            </div>
-
-            <div className={styles.actions}>
-                <button className={styles.iconButton}>
-                    <Bell className={styles.icon} />
-                </button>
-                <div className={styles.avatar}>
-                    <User className={styles.userIcon} />
-                </div>
             </div>
         </header>
     );

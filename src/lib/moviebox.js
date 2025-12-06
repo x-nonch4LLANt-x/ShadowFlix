@@ -131,9 +131,16 @@ class MovieBoxAPI {
                     "Referer": referer,
                 },
             });
+
+            console.log("=== MovieBox getSources Response ===");
+            console.log("SubjectId:", subjectId, "Season:", season, "Episode:", episode);
+            console.log("Response structure:", JSON.stringify(response.data, null, 2));
+
+            // Return the full response data - let the caller handle the structure
             return response.data;
         } catch (error) {
             console.error("MovieBox sources error:", error.message);
+            console.error("Error details:", error);
             return null;
         }
     }

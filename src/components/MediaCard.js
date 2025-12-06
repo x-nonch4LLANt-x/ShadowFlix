@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Star, Play } from "lucide-react";
 import styles from "./MediaCard.module.css";
 
@@ -23,7 +24,14 @@ const MediaCard = ({ item }) => {
     return (
         <Link href={`/details/${item.imdb_id || item.id}?${queryParams}`} className={styles.card}>
             <div className={styles.imageContainer}>
-                <img src={poster} alt={title} className={styles.image} loading="lazy" />
+                <Image
+                    src={poster}
+                    alt={title}
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
+                    className={styles.image}
+                    loading="lazy"
+                />
             </div>
 
             <div className={styles.content}>

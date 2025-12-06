@@ -107,14 +107,14 @@ const NewHeroSection = () => {
         <div className={styles.container}>
             {/* Left Slider */}
             <div className={styles.slider}>
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="popLayout">
                     <motion.div
                         key={currentIndex}
                         className={styles.slideContainer}
                         initial={{ x: "100%" }}
                         animate={{ x: 0 }}
                         exit={{ x: "-100%" }}
-                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                        transition={{ duration: 0.7, ease: "easeInOut" }}
                     >
                         <div
                             className={styles.slideBackground}
